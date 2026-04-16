@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeAI — ATS Resume Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════
+       GLOBAL NAV
+  ═══════════════════════════════════════════════════ -->
+  <nav class="global-nav">
+    <div class="nav-brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-name">ResumeAI</span>
+    </div>
+    <div class="nav-right">
+      <div class="ollama-status" id="ollamaStatus" title="OpenAI API status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Checking...</span>
+      </div>
+      <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">
+        <span class="theme-icon-dark">🌙</span>
+        <span class="theme-icon-light">☀️</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════
+       PAGE 1: LANDING
+  ═══════════════════════════════════════════════════ -->
+  <div class="page" id="pageLanding">
+    <div class="landing-hero">
+      <div class="hero-badge">✨ Powered by Local AI — 100% Free</div>
+      <h1 class="hero-title">
+        Build a Resume That<br/>
+        <span class="gradient-text">Beats Every ATS</span>
+      </h1>
+      <p class="hero-sub">
+        Paste your job description. Our AI extracts keywords, rewrites your
+        experience with impact metrics, and generates a perfectly formatted
+        resume tailored to hiring systems in your country — in seconds.
+      </p>
+      <button class="btn-hero" id="btnStart">
+        Start Generating
+        <span class="btn-arrow">→</span>
+      </button>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num">4</div><div class="stat-label">Countries</div></div>
+        <div class="stat-div"></div>
+        <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Free &amp; Local</div></div>
+        <div class="stat-div"></div>
+        <div class="stat"><div class="stat-num">ATS</div><div class="stat-label">Optimized</div></div>
+        <div class="stat-div"></div>
+        <div class="stat"><div class="stat-num">AI</div><div class="stat-label">Powered</div></div>
+      </div>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Keyword Extraction</h3>
+        <p>Pulls the top 15 ATS keywords from any job description and weaves them naturally into your resume.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✍️</div>
+        <h3>AI Rewriting</h3>
+        <p>Transforms raw experience into powerful bullets: Action Verb + What You Did + Measurable Result.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h3>Country-Specific Forms</h3>
+        <p>Each country gets different fields — Australia has referee inputs, India has career objective, Canada has volunteer section.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Live ATS Score</h3>
+        <p>See your match percentage, letter grade, and exactly which keywords are matched or missing.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>PDF Download</h3>
+        <p>Download your finished resume as a clean, print-ready PDF in one click.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>100% Private</h3>
+        <p>Powered by OpenAI GPT-4o-mini. Fast, accurate, and ATS-optimized.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       PAGE 2: COUNTRY SELECTION
+  ═══════════════════════════════════════════════════ -->
+  <div class="page hidden" id="pageCountry">
+    <div class="country-header">
+      <button class="btn-back" id="btnBackToLanding">← Back</button>
+      <h2 class="country-title">Where are you applying?</h2>
+      <p class="country-sub">Each country has a unique ATS system. Select yours to get a perfectly tailored resume.</p>
+    </div>
+    <div class="country-grid">
+
+      <div class="country-card" data-country="USA">
+        <div class="country-card-header">
+          <span class="country-flag">🇺🇸</span>
+          <div>
+            <div class="country-name">United States</div>
+            <div class="country-meta">1 page · No photo · Strict ATS</div>
+          </div>
+          <div class="country-check">✓</div>
+        </div>
+        <p class="country-desc">US resumes are strictly 1 page, keyword-rich, and achievement-focused. ATS systems here are the most demanding — every bullet must start with a strong action verb and include quantifiable results. No photos, no personal details — just skills, impact, and numbers.</p>
+        <div class="country-tags">
+          <span class="ctag">1 Page</span><span class="ctag">Action Verbs</span><span class="ctag">Metrics Required</span><span class="ctag">No Photo</span><span class="ctag">Keyword-Dense</span>
+        </div>
+        <button class="btn-select-country">Select &amp; Continue →</button>
+      </div>
+
+      <div class="country-card" data-country="Canada">
+        <div class="country-card-header">
+          <span class="country-flag">🇨🇦</span>
+          <div>
+            <div class="country-name">Canada</div>
+            <div class="country-meta">1–2 pages · No photo · Soft skills valued</div>
+          </div>
+          <div class="country-check">✓</div>
+        </div>
+        <p class="country-desc">Canadian resumes mirror the US style but allow 1–2 pages and value soft skills, teamwork, and community involvement. A Volunteer Experience section is highly valued. Clean formatting, transferable skills, and measurable achievements are key to passing Canadian ATS filters.</p>
+        <div class="country-tags">
+          <span class="ctag">1–2 Pages</span><span class="ctag">Soft Skills</span><span class="ctag">Volunteer Section</span><span class="ctag">No Photo</span><span class="ctag">Bilingual Friendly</span>
+        </div>
+        <button class="btn-select-country">Select &amp; Continue →</button>
+      </div>
+
+      <div class="country-card" data-country="India">
+        <div class="country-card-header">
+          <span class="country-flag">🇮🇳</span>
+          <div>
+            <div class="country-name">India</div>
+            <div class="country-meta">1–2 pages · Photo optional · Career objective</div>
+          </div>
+          <div class="country-check">✓</div>
+        </div>
+        <p class="country-desc">Indian resumes are more flexible and include a Career Objective, Certifications, and Personal Details section. Photos and DOB are still common, especially for freshers. For tech roles like AI/ML, explicitly list all tools and technologies. ATS-friendly formatting with keyword-optimized bullet points is increasingly important.</p>
+        <div class="country-tags">
+          <span class="ctag">1–2 Pages</span><span class="ctag">Career Objective</span><span class="ctag">Photo Optional</span><span class="ctag">Certifications</span><span class="ctag">Achievements</span>
+        </div>
+        <button class="btn-select-country">Select &amp; Continue →</button>
+      </div>
+
+      <div class="country-card" data-country="Australia">
+        <div class="country-card-header">
+          <span class="country-flag">🇦🇺</span>
+          <div>
+            <div class="country-name">Australia</div>
+            <div class="country-meta">2–3 pages · Detailed · Referees section</div>
+          </div>
+          <div class="country-check">✓</div>
+        </div>
+        <p class="country-desc">Australian resumes are 2–3 pages and more detailed than US ones. Employers value transparency and depth — include specific responsibilities, achievements, and context for every role. A Referees section is expected. Balance detail with clean, ATS-readable formatting and strong keyword matching.</p>
+        <div class="country-tags">
+          <span class="ctag">2–3 Pages</span><span class="ctag">Detailed Experience</span><span class="ctag">Referees</span><span class="ctag">No Photo</span><span class="ctag">Key Achievements</span>
+        </div>
+        <button class="btn-select-country">Select &amp; Continue →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       PAGE 3: MAIN APP (SPLIT PANEL)
+  ═══════════════════════════════════════════════════ -->
+  <div class="page hidden" id="pageApp">
+
+    <div class="app-subheader">
+      <button class="btn-back" id="btnBackToCountry">← Change Country</button>
+      <div class="selected-country-pill" id="selectedCountryPill">🇺🇸 USA Resume</div>
+    </div>
+
+    <div class="app-layout">
+
+      <!-- ── LEFT PANEL ── -->
+      <aside class="left-panel">
+        <div class="panel-scroll">
+
+          <!-- ── PERSONAL INFO (ALL countries) ── -->
+          <section class="form-section">
+            <h3 class="section-label"><span class="section-icon">👤</span> Personal Info</h3>
+            <div class="form-group">
+              <label for="fullName">Full Name <span class="required">*</span></label>
+              <input type="text" id="fullName" placeholder="e.g. Nishtha Arora" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" placeholder="you@email.com" />
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" placeholder="+1 (555) 000-0000" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="linkedin">LinkedIn URL</label>
+              <input type="url" id="linkedin" placeholder="linkedin.com/in/yourname" />
+            </div>
+            <!-- City label changes per country -->
+            <div class="form-group">
+              <label for="city" id="cityLabel">City / Location</label>
+              <input type="text" id="city" placeholder="San Francisco, CA" />
+            </div>
+
+            <!-- India only: photo toggle + upload -->
+            <div class="form-group hidden" id="photoUploadWrap">
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">Include Photo</div>
+                  <div class="toggle-sub">Optional · Recommended for Indian resumes</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="includePhotoToggle" />
+                  <span class="toggle-thumb"></span>
+                </label>
+              </div>
+              <div id="photoUploadBox" class="photo-upload-box hidden" style="margin-top:10px;">
+                <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" />
+                <img id="photoPreviewImg" src="" alt="Preview" />
+                <div id="photoUploadPrompt">
+                  <div class="photo-upload-icon">📷</div>
+                  <div>Click to upload photo</div>
+                  <div class="photo-upload-sub">JPG, PNG · Max 2MB · Passport style</div>
+                </div>
+                <button type="button" class="photo-remove-btn" id="photoRemoveBtn">✕ Remove</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── INDIA: Career Objective ── -->
+          <section class="form-section hidden" id="sectionCareerObjective">
+            <h3 class="section-label"><span class="section-icon">🎯</span> Career Objective</h3>
+            <div class="form-group">
+              <label for="careerObjective">2–3 sentence professional objective <span class="label-hint">India ATS requires this</span></label>
+              <textarea id="careerObjective" rows="3" placeholder="Motivated AI/ML engineer with 3+ years of experience seeking to leverage expertise in deep learning and NLP to drive impactful solutions at a forward-thinking technology company."></textarea>
+            </div>
+          </section>
+
+          <!-- ── JOB DESCRIPTION (ALL countries) ── -->
+          <section class="form-section">
+            <h3 class="section-label"><span class="section-icon">📋</span> Job Description</h3>
+            <div class="form-group">
+              <label for="jobDescription">Paste the full JD <span class="label-hint">AI extracts keywords from this</span></label>
+              <textarea id="jobDescription" rows="6" placeholder="Paste the full job description here. The AI extracts the top ATS keywords and tailors your resume to match..."></textarea>
+            </div>
+          </section>
+
+          <!-- ── EXPERIENCE (ALL countries) ── -->
+          <section class="form-section">
+            <h3 class="section-label"><span class="section-icon">💼</span> Work Experience</h3>
+            <div class="form-group">
+              <label for="experience">Your raw experience <span class="label-hint">AI rewrites with action verbs + metrics</span></label>
+              <textarea id="experience" rows="7" placeholder="Software Engineer at XYZ Corp (2021-2023)
+- Worked on backend APIs
+- Helped with ML model deployment
+
+ML Intern at ABC Inc (2020)
+- Built data pipelines with Python"></textarea>
+            </div>
+          </section>
+
+          <!-- ── SKILLS (ALL countries) ── -->
+          <section class="form-section">
+            <h3 class="section-label"><span class="section-icon">🛠️</span> Skills</h3>
+            <div class="form-group">
+              <label for="skills">Comma-separated <span class="label-hint">AI groups into categories</span></label>
+              <textarea id="skills" rows="3" placeholder="Python, Machine Learning, PyTorch, LangChain, AWS, Docker, React, SQL"></textarea>
+            </div>
+          </section>
+
+          <!-- ── EDUCATION (ALL countries) ── -->
+          <section class="form-section">
+            <h3 class="section-label"><span class="section-icon">🎓</span> Education</h3>
+            <div class="form-group">
+              <textarea id="education" rows="3" placeholder="B.Tech Computer Science, IIT Delhi, 2020, CGPA: 8.5/10"></textarea>
+            </div>
+          </section>
+
+          <!-- ── PROJECTS (ALL countries) ── -->
+          <section class="form-section">
+            <h3 class="section-label"><span class="section-icon">🚀</span> Projects</h3>
+            <div class="form-group">
+              <textarea id="projects" rows="4" placeholder="RAG Chatbot: Built with LangChain + Pinecone, 95% query accuracy&#10;Resume Analyzer: Python tool matching resumes to JD keywords"></textarea>
+            </div>
+          </section>
+
+          <!-- ── INDIA: Certifications ── -->
+          <section class="form-section hidden" id="sectionCertifications">
+            <h3 class="section-label"><span class="section-icon">🏆</span> Certifications</h3>
+            <div class="form-group">
+              <textarea id="certifications" rows="3" placeholder="AWS Certified Solutions Architect (2023)&#10;Google Professional Data Engineer&#10;TensorFlow Developer Certificate"></textarea>
+            </div>
+          </section>
+
+          <!-- ── INDIA: Achievements ── -->
+          <section class="form-section hidden" id="sectionAchievements">
+            <h3 class="section-label"><span class="section-icon">🥇</span> Achievements</h3>
+            <div class="form-group">
+              <textarea id="achievements" rows="3" placeholder="Ranked top 5% in national coding competition&#10;Published IEEE research paper on NLP&#10;Won 1st place at university hackathon"></textarea>
+            </div>
+          </section>
+
+          <!-- ── INDIA: Languages ── -->
+          <section class="form-section hidden" id="sectionLanguages">
+            <h3 class="section-label"><span class="section-icon">🌐</span> Languages Known</h3>
+            <div class="form-group">
+              <textarea id="languages" rows="2" placeholder="English (Fluent), Hindi (Native), French (Intermediate)"></textarea>
+            </div>
+          </section>
+
+          <!-- ── CANADA: Volunteer Experience ── -->
+          <section class="form-section hidden" id="sectionVolunteer">
+            <h3 class="section-label"><span class="section-icon">🤝</span> Volunteer Experience</h3>
+            <div class="form-group">
+              <label for="volunteer">Optional but highly valued in Canada <span class="label-hint">Boosts ATS score</span></label>
+              <textarea id="volunteer" rows="4" placeholder="Tech Mentor, Code For Good (2022-2023)
+- Mentored 20+ students in Python and web development
+- Organised weekly sessions reaching 100+ participants"></textarea>
+            </div>
+          </section>
+
+          <!-- ── AUSTRALIA: Referees ── -->
+          <section class="form-section hidden" id="sectionReferees">
+            <h3 class="section-label"><span class="section-icon">👥</span> Referees</h3>
+            <p class="section-note">Leave blank to print "Available upon request"</p>
+
+            <div class="referee-block">
+              <div class="referee-title">Referee 1</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="ref1Name">Full Name</label>
+                  <input type="text" id="ref1Name" placeholder="Dr. Sarah Johnson" />
+                </div>
+                <div class="form-group">
+                  <label for="ref1Title">Job Title</label>
+                  <input type="text" id="ref1Title" placeholder="Engineering Manager" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ref1Company">Company / Organisation</label>
+                <input type="text" id="ref1Company" placeholder="Atlassian, Sydney" />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="ref1Phone">Phone</label>
+                  <input type="tel" id="ref1Phone" placeholder="+61 4XX XXX XXX" />
+                </div>
+                <div class="form-group">
+                  <label for="ref1Email">Email</label>
+                  <input type="email" id="ref1Email" placeholder="sarah@company.com" />
+                </div>
+              </div>
+            </div>
+
+            <div class="referee-block" style="margin-top:14px;">
+              <div class="referee-title">Referee 2</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="ref2Name">Full Name</label>
+                  <input type="text" id="ref2Name" placeholder="Prof. Michael Chen" />
+                </div>
+                <div class="form-group">
+                  <label for="ref2Title">Job Title</label>
+                  <input type="text" id="ref2Title" placeholder="Senior Data Scientist" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ref2Company">Company / Organisation</label>
+                <input type="text" id="ref2Company" placeholder="Commonwealth Bank, Melbourne" />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="ref2Phone">Phone</label>
+                  <input type="tel" id="ref2Phone" placeholder="+61 4XX XXX XXX" />
+                </div>
+                <div class="form-group">
+                  <label for="ref2Email">Email</label>
+                  <input type="email" id="ref2Email" placeholder="michael@company.com" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── ACTIONS ── -->
+          <section class="form-section action-section">
+            <button class="btn-generate" id="generateBtn">
+              <span class="btn-icon">✨</span>
+              <span class="btn-text">Generate ATS Resume</span>
+            </button>
+            <button class="btn-download" id="downloadBtn" disabled>
+              <span class="btn-icon">⬇️</span>
+              <span class="btn-text">Download PDF</span>
+            </button>
+            <p class="shortcut-hint">Tip: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to generate</p>
+          </section>
+
+        </div>
+      </aside>
+
+      <!-- ── RIGHT PANEL ── -->
+      <section class="right-panel">
+
+        <!-- ATS Score Bar -->
+        <div class="ats-bar" id="atsBar" style="display:none;">
+          <div class="ats-score-block">
+            <div class="ats-label">ATS Match Score</div>
+            <div class="ats-score-row">
+              <div class="ats-grade" id="atsGrade">—</div>
+              <div class="ats-score-num" id="atsScoreNum">—%</div>
+            </div>
+            <div class="ats-progress-track">
+              <div class="ats-progress-fill" id="atsProgressFill" style="width:0%"></div>
+            </div>
+            <div class="ats-feedback" id="atsFeedback"></div>
+          </div>
+          <div class="ats-keywords-block">
+            <div class="ats-kw-col">
+              <div class="ats-kw-title matched">✅ Matched</div>
+              <div class="ats-kw-list" id="matchedKeywords"></div>
+            </div>
+            <div class="ats-kw-col">
+              <div class="ats-kw-title missing">⚠️ Missing</div>
+              <div class="ats-kw-list" id="missingKeywords"></div>
+            </div>
+          </div>
+          <div class="ats-model-info" id="atsModelInfo"></div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon" id="emptyCountryFlag">📄</div>
+          <h2 id="emptyTitle">Ready to build your resume</h2>
+          <p id="emptyDesc">Fill in your details and click <strong>Generate ATS Resume</strong>.</p>
+          <ul class="feature-list">
+            <li>⚡ AI keyword extraction from JD</li>
+            <li>🎯 Country-specific ATS conventions</li>
+            <li>📊 Live match score &amp; keyword gaps</li>
+          </ul>
+        </div>
+
+        <!-- Loading state -->
+        <div class="loading-state" id="loadingState" style="display:none;">
+          <div class="spinner-ring"></div>
+          <div class="loading-text">Crafting your ATS resume...</div>
+          <div class="loading-sub" id="loadingSub">Extracting keywords from job description</div>
+        </div>
+
+        <!-- Resume preview -->
+        <div class="resume-wrapper" id="resumeWrapper" style="display:none;">
+          <iframe id="resumeFrame" title="Resume Preview" sandbox="allow-same-origin"></iframe>
+        </div>
+
+      </section>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
