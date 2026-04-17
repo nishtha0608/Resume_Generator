@@ -5,6 +5,14 @@ ats_rules.py — ATS keyword extraction, scoring, and country resume rules.
 import re
 from collections import Counter
 
+import numpy as np
+
+
+def _cosine(a, b):
+    a, b = np.array(a, dtype=float), np.array(b, dtype=float)
+    denom = np.linalg.norm(a) * np.linalg.norm(b)
+    return float(np.dot(a, b) / denom) if denom else 0.0
+
 
 COUNTRY_RULES = {
     "USA": {
@@ -58,7 +66,7 @@ COUNTRY_RULES = {
             "body_text": "#1a1a1a",
             "secondary": "#555555",
             "layout": "single-column with photo",
-            "header_style": "Light blue (#eaf4fb) header background, name in bold 30px #1a5276, contact info in 11px below name. If photo: float a 90x110px bordered box to the top-right inside the header. Section headings: background #1a5276, white text, padding 4px 8px, uppercase bold 12px, full width. Skills in a 3-column table. Languages as inline pills.",
+            "header_style": "Light blue (#eaf4fb) header background, name in bold 30px #1a5276, contact info in 11px below name. If photo: header is display:flex justify-content:space-between — name+contact on the LEFT, photo box on the RIGHT (flex-shrink:0, no float). Section headings: background #1a5276, white text, padding 4px 8px, uppercase bold 12px, full width. Skills in a 3-column table. Languages as inline pills.",
         },
     },
     "Australia": {
@@ -242,6 +250,71 @@ def calculate_ats_score(resume_text: str, keywords: list[str]) -> dict:
     }
 
 
+def calculate_ats_score_semantic(resume_text: str, keywords: list[str], openai_client) -> dict:
+    """
+    ATS scoring using OpenAI text-embedding-3-small.
+    Exact matches are found first; remaining keywords are checked via
+    cosine similarity against resume lines (threshold 0.72).
+    """
+    if not keywords:
+        return {
+            "score": 0, "matched": [], "missing": [], "semantic_matched": [],
+            "grade": "N/A", "feedback": "No keywords extracted from job description.",
+        }
+
+    resume_lower = resume_text.lower()
+
+    exact_matched = [kw for kw in keywords if kw.lower() in resume_lower]
+    to_check      = [kw for kw in keywords if kw.lower() not in resume_lower]
+
+    semantic_matched = []
+
+    if to_check:
+        chunks = [s.strip() for s in re.split(r"\n+", resume_text) if len(s.strip()) > 8]
+        if not chunks:
+            chunks = [resume_text[:2000]]
+
+        all_texts = to_check + chunks
+        resp = openai_client.embeddings.create(
+            model="text-embedding-3-small",
+            input=all_texts,
+        )
+        embeddings      = [e.embedding for e in resp.data]
+        kw_embeddings   = embeddings[:len(to_check)]
+        chunk_embeddings = embeddings[len(to_check):]
+
+        THRESHOLD = 0.72
+        for i, kw in enumerate(to_check):
+            max_sim = max(_cosine(kw_embeddings[i], ce) for ce in chunk_embeddings)
+            if max_sim >= THRESHOLD:
+                semantic_matched.append(kw)
+
+    matched = exact_matched + semantic_matched
+    missing = [kw for kw in keywords if kw not in matched]
+
+    raw_score     = len(matched) / len(keywords) * 100
+    power_matched = sum(1 for kw in matched if kw in POWER_KEYWORDS)
+    score         = min(100, int(raw_score + min(10, power_matched * 2)))
+
+    if score >= 85:
+        grade, feedback = "A", "Excellent ATS match! Your resume is well-optimized for this role."
+    elif score >= 70:
+        grade, feedback = "B", "Good match. Consider adding a few more keywords from the missing list."
+    elif score >= 50:
+        grade, feedback = "C", "Average match. Weave more job-specific keywords into your experience bullets."
+    else:
+        grade, feedback = "D", "Low match. The resume needs more keywords from the job description."
+
+    return {
+        "score":            score,
+        "matched":          matched,
+        "missing":          missing[:6],
+        "semantic_matched": semantic_matched,
+        "grade":            grade,
+        "feedback":         feedback,
+    }
+
+
 def get_country_rules(country: str) -> dict:
     return COUNTRY_RULES.get(country, COUNTRY_RULES["USA"])
 
@@ -267,3 +340,4 @@ def build_country_instructions(country: str, include_photo: bool = False) -> str
         f"  Header & section heading instructions: {d['header_style']}",
     ]
     return "\n".join(lines)
+

@@ -14,7 +14,7 @@ services:
       - FLASK_ENV=development
       - FLASK_DEBUG=0             # set to 1 for hot-reload during dev
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/"]
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 20s
       timeout: 5s
       retries: 3

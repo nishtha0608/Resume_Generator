@@ -769,8 +769,9 @@ kbd {
 .ats-kw-list { display: flex; flex-wrap: wrap; gap: 5px; }
 
 .kw-chip { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
-.kw-chip.matched { background: rgba(63,185,80,.12); color: var(--green);  border: 1px solid rgba(63,185,80,.25); }
+.kw-chip.matched  { background: rgba(63,185,80,.12);  color: var(--green);  border: 1px solid rgba(63,185,80,.25); }
 .kw-chip.missing  { background: rgba(240,136,62,.12); color: var(--orange); border: 1px solid rgba(240,136,62,.25); }
+.kw-chip.semantic { background: rgba(88,166,255,.12); color: #58a6ff;       border: 1px solid rgba(88,166,255,.30); }
 
 .ats-model-info { font-size: 11px; color: var(--text-3); align-self: flex-end; white-space: nowrap; }
 
@@ -980,6 +981,7 @@ kbd {
   margin: -8px 0 10px;
   font-style: italic;
 }
+
 
 /* ── Referee block ── */
 .referee-block {

@@ -6,7 +6,7 @@
 
 "use strict";
 
-const API_BASE = "http://localhost:5001";
+const API_BASE = "";
 
 const LOADING_STEPS = [
   "Extracting keywords from job description...",
@@ -189,9 +189,8 @@ function collectFormData() {
 }
 
 function validateForm(data) {
-  if (!data.name)            return "Please enter your full name.";
-  if (!data.email)           return "Please enter your email address.";
-  if (!data.job_description) return "Please paste the job description — the AI uses it to extract ATS keywords.";
+  if (!data.name)  return "Please enter your full name.";
+  if (!data.email) return "Please enter your email address.";
   return null;
 }
 
@@ -271,14 +270,22 @@ function displayAtsScore(result) {
 
   $("atsFeedback").textContent = result.ats_feedback || "";
 
+  const semanticSet = new Set(result.semantic_matched || []);
+
   $("matchedKeywords").innerHTML = (result.matched_keywords || [])
-    .map(k => `<span class="kw-chip matched">${k}</span>`).join("");
+    .map(k => semanticSet.has(k)
+      ? `<span class="kw-chip semantic" title="Semantically matched">~${k}</span>`
+      : `<span class="kw-chip matched">${k}</span>`)
+    .join("");
 
   $("missingKeywords").innerHTML = (result.missing_keywords || [])
     .map(k => `<span class="kw-chip missing">${k}</span>`).join("");
 
   if (result.model_used) {
-    $("atsModelInfo").textContent = `via ${result.model_used}`;
+    const semCount = result.semantic_matched?.length || 0;
+    $("atsModelInfo").textContent = semCount > 0
+      ? `via ${result.model_used} · ${semCount} semantic match${semCount > 1 ? "es" : ""}`
+      : `via ${result.model_used}`;
   }
 }
 
@@ -299,8 +306,8 @@ function resetPhoto() {
 function injectPhoto(html) {
   if (!state.photoBase64) return html;
   return html.replace(
-    /<div[^>]*>\s*Photo\s*<\/div>/i,
-    `<img src="${state.photoBase64}" style="float:right;width:90px;height:110px;object-fit:cover;border-radius:4px;border:1px solid #ddd;margin-left:20px;" alt="Profile Photo">`
+    /<div[^>]*id="resume-photo-placeholder"[^>]*>[\s\S]*?<\/div>/i,
+    `<img src="${state.photoBase64}" style="width:90px;height:110px;object-fit:cover;border-radius:4px;border:1px solid #ddd;flex-shrink:0;" alt="Profile Photo">`
   );
 }
 
@@ -471,7 +478,7 @@ function initEvents() {
     if (e.target !== $("photoRemoveBtn")) $("photoInput").click();
   });
 
-  $("generateBtn").addEventListener("click", generateResume);
+$("generateBtn").addEventListener("click", generateResume);
   $("downloadBtn").addEventListener("click", downloadPDF);
 
   // Ctrl/Cmd + Enter shortcut

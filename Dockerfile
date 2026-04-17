@@ -5,16 +5,23 @@ LABEL description="ATS Resume Generator — Flask + OpenAI Backend"
 
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
+# Install system deps: curl for healthcheck + weasyprint requirements
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    libpango-1.0-0 \
+    libpangoft2-1.0-0 \
+    libpangocairo-1.0-0 \
+    libharfbuzz0b \
+    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies first (Docker layer cache — only rebuilds if requirements change)
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend source
+# Copy backend source and frontend
 COPY backend/ .
+COPY frontend/ ./frontend/
 
 EXPOSE 5001
 

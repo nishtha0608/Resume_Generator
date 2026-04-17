@@ -1,11 +1,12 @@
-# ⚡ ATS Resume Generator — AI Powered
+# ⚡ ResumeAI — ATS Resume Generator
 
-> A full-stack web app that uses a **local LLM (Ollama/llama3)** to generate perfectly tailored, ATS-optimized resumes for **USA, Canada, India, and Australia** — with live keyword scoring, country-specific conventions, and one-click PDF export.
+> A full-stack web app that uses **OpenAI GPT-4o-mini** + **semantic similarity scoring** to generate perfectly tailored, ATS-optimized resumes for **USA, Canada, India, and Australia** — with live keyword scoring, country-specific conventions, and one-click PDF export.
 
 ![Stack](https://img.shields.io/badge/Backend-Python%20Flask-blue)
-![Stack](https://img.shields.io/badge/AI-Ollama%20llama3-purple)
+![Stack](https://img.shields.io/badge/AI-OpenAI%20GPT--4o--mini-purple)
+![Stack](https://img.shields.io/badge/Scoring-Semantic%20Similarity-orange)
 ![Stack](https://img.shields.io/badge/Frontend-Vanilla%20JS-yellow)
-![Stack](https://img.shields.io/badge/Cost-100%25%20Free-green)
+![Stack](https://img.shields.io/badge/Deploy-Docker-2496ED)
 
 ---
 
@@ -18,7 +19,7 @@
 │  │   Left Panel    │   │   Right Panel        │ │
 │  │  - Input Form   │   │  - Resume Preview    │ │
 │  │  - Country UI   │   │  - ATS Score Bar     │ │
-│  │  - Batch Btn    │   │  - Keyword Chips     │ │
+│  │  - Country Tabs │   │  - Keyword Chips     │ │
 │  └────────┬────────┘   └──────────────────────┘ │
 │           │ POST /generate-resume                 │
 └───────────┼──────────────────────────────────────┘
@@ -27,15 +28,15 @@
 │  Flask Backend (backend/)                        │
 │  ┌─────────────┐  ┌──────────────┐  ┌─────────┐ │
 │  │   app.py    │  │resume_builder│  │ats_rules│ │
-│  │ HTTP routes │→ │  AI prompts  │→ │keywords │ │
-│  │ validation  │  │ Ollama calls │  │ scoring │ │
-│  └─────────────┘  └──────┬───────┘  └─────────┘ │
-└─────────────────────────┼────────────────────────┘
-                           │ ollama.chat()
+│  │ HTTP routes │→ │ GPT-4o-mini  │→ │keywords │ │
+│  │ validation  │  │  prompts     │  │semantic │ │
+│  └─────────────┘  └──────┬───────┘  │ scoring │ │
+└─────────────────────────┼───────────└─────────┘─┘
+                           │ OpenAI API
 ┌──────────────────────────▼───────────────────────┐
-│  Ollama (local LLM server)                       │
-│  Model: llama3 / mistral (auto-detected)         │
-│  Runs at: http://localhost:11434                 │
+│  OpenAI API                                      │
+│  Resume gen:   gpt-4o-mini  (chat completions)  │
+│  ATS scoring:  text-embedding-3-small            │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -43,89 +44,59 @@
 
 | Decision | Rationale |
 |---|---|
+| **GPT-4o-mini** | Fast, cheap, and excellent at structured HTML output |
+| **Semantic ATS scoring** | Uses `text-embedding-3-small` to catch synonyms — "ML" matches "machine learning" |
+| **Score user input, not AI output** | AI always weaves in all keywords; scoring original content gives honest gap analysis |
 | **Vanilla JS, no frameworks** | Zero build step, instant demo, easy to explain in interviews |
 | **Separated `ats_rules.py`** | Domain logic is isolated and unit-testable independently of the LLM |
 | **Sandboxed iframe preview** | Prevents injected HTML from accessing parent DOM (XSS safe) |
-| **Model auto-detection** | Gracefully uses whatever Ollama model is installed |
 | **Stateless Flask API** | No database needed; each request is fully self-contained |
 | **Low temperature (0.3)** | Consistent, structured HTML output from the LLM |
 
 ---
 
-## Setup (3 Steps)
+## Setup
 
-### Step 1 — Install Ollama
+### Prerequisites
 
-```bash
-# macOS
-brew install ollama
+- Docker & Docker Compose installed
+- An [OpenAI API key](https://platform.openai.com/api-keys)
 
-# Or download from: https://ollama.ai
-```
+### Step 1 — Add your API key
 
-### Step 2 — Pull the llama3 model
+Create a `.env` file in the project root:
 
 ```bash
-ollama pull llama3
+echo "OPENAI_API_KEY=sk-..." > .env
 ```
 
-> This downloads ~4GB once. After that, generation is instant and **100% free** — no API keys, no rate limits.
+### Step 2 — Start with Docker
 
 ```bash
-# Check it works:
-ollama list
-# Should show: llama3:latest
-
-# Optional: also pull mistral as fallback
-ollama pull mistral
+docker compose up --build -d
 ```
 
-### Step 3 — Run the backend
+### Step 3 — Open the frontend
+
+```bash
+open frontend/index.html
+```
+
+The status dot in the top-right turns green when the API key is valid.
+
+---
+
+## Local Development (without Docker)
 
 ```bash
 cd backend
-
-# Create a virtual environment
 python -m venv .venv
 source .venv/bin/activate       # macOS/Linux
 # .venv\Scripts\activate        # Windows
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Start the server
 python app.py
-```
-
-You should see:
-```
-============================================================
-  ATS Resume Generator — Backend API
-  Running at: http://localhost:5000
-============================================================
-```
-
-### Open the frontend
-
-```bash
-# Simply open the HTML file in your browser:
-open frontend/index.html
-
-# Or serve it locally (avoids some browser CORS quirks):
-cd frontend && python -m http.server 3000
-# Then open: http://localhost:3000
-```
-
----
-
-## Docker Setup (Alternative)
-
-```bash
-# Build and start both Ollama + Flask in one command:
-docker compose up --build
-
-# Ollama will automatically pull llama3 on first start.
-# Then open: frontend/index.html
+# → Running at http://localhost:5001
 ```
 
 ---
@@ -134,6 +105,13 @@ docker compose up --build
 
 ### `GET /`
 Health check.
+
+**Response:** `{ "status": "ok", "service": "ATS Resume Generator API" }`
+
+### `GET /check-openai`
+Verify OpenAI API key is configured.
+
+**Response:** `{ "available": true, "model": "gpt-4o-mini" }`
 
 ### `POST /generate-resume`
 Generate an ATS-optimized resume.
@@ -156,50 +134,69 @@ Generate an ATS-optimized resume.
 }
 ```
 
+Country-specific optional fields:
+- **India:** `career_objective`, `certifications`, `achievements`, `languages`
+- **Canada:** `volunteer`
+- **Australia:** `referee1`, `referee2` (objects with `name`, `title`, `company`, `phone`, `email`)
+
 **Response:**
 ```json
 {
-  "resume_html": "<div class=\"resume\">...</div>",
-  "ats_score": 82,
+  "resume_html": "<div>...</div>",
+  "ats_score": 74,
   "ats_grade": "B",
-  "ats_feedback": "Good ATS match. Consider adding a few more keywords.",
+  "ats_feedback": "Good match. Consider adding a few more keywords.",
   "matched_keywords": ["python", "machine learning", "aws"],
   "missing_keywords": ["kubernetes", "mlops"],
-  "all_keywords": ["python", "machine learning", "aws", ...],
-  "model_used": "llama3",
+  "semantic_matched": ["ml", "deep learning"],
+  "all_keywords": ["python", "machine learning", "aws", "..."],
+  "model_used": "gpt-4o-mini",
   "country": "USA",
   "flag": "🇺🇸"
 }
 ```
 
 ### `POST /download-pdf`
-Server-side PDF generation (requires wkhtmltopdf installed).
+Server-side PDF generation (requires `wkhtmltopdf`). Falls back with `501` — frontend uses `window.print()` in that case.
 
-### `GET /check-ollama`
-Check Ollama availability and list installed models.
+---
+
+## ATS Scoring — How It Works
+
+Scoring runs on the **user's original input** (not the AI-generated resume) to give honest keyword gap analysis.
+
+1. **Extract keywords** from the job description using `POWER_KEYWORDS` + frequency filtering (no garbage bigrams)
+2. **Exact match** — check if each keyword appears literally in the user's experience/skills text
+3. **Semantic match** — for keywords not found exactly, embed them with `text-embedding-3-small` and compare cosine similarity against resume lines (threshold 0.72)
+4. **Score** = matched / total × 100, with a +10 bonus for matching high-value power keywords
+
+In the UI, exact matches show as green chips, semantic matches as blue `~keyword` chips.
 
 ---
 
 ## Country-Specific Resume Rules
 
-| Country | Pages | Photo | Special Sections |
-|---------|-------|-------|-----------------|
-| 🇺🇸 USA | 1 (strict) | No | Achievement-focused bullets |
-| 🇨🇦 Canada | 1-2 | No | Volunteer Experience |
-| 🇮🇳 India | 1-2 | Optional | Career Objective, Personal Details, Declaration |
-| 🇦🇺 Australia | 2-3 | No | Referees, Key Achievements |
+| Country | Pages | Photo | Special Sections | Design |
+|---------|-------|-------|-----------------|--------|
+| 🇺🇸 USA | 1 (strict) | No | — | Dark navy header |
+| 🇨🇦 Canada | 1–2 | No | Volunteer Experience | White header, red accents |
+| 🇮🇳 India | 1–2 | Optional | Career Objective, Certifications, Achievements, Languages | Light blue header |
+| 🇦🇺 Australia | 2–3 | No | Referees, Key Achievements | Dark green header |
 
 ---
 
 ## Features
 
-- **AI keyword extraction** — pulls top 15 ATS keywords from any job description
+- **GPT-4o-mini resume generation** — fast, structured, ATS-ready HTML
+- **Semantic ATS scoring** — catches synonyms via OpenAI embeddings
+- **Honest score** — measured against user's raw input, not AI output
+- **AI keyword extraction** — top 15 keywords from any job description
 - **Smart rewriting** — every bullet becomes `[Action Verb] + [What] + [Metric]`
-- **Live ATS score** — percentage match + grade (A/B/C/D)
-- **Batch generation** — generate all 4 country versions in one click
-- **PDF download** — server-side via pdfkit or browser print fallback
-- **Model auto-detection** — uses whatever Ollama model you have installed
-- **No API costs** — 100% local, runs on your machine
+- **Live ATS score** — percentage, letter grade (A/B/C/D), matched vs missing chips
+- **Typography optimized** — precise font sizing, spacing, and hierarchy per country
+- **PDF download** — server-side pdfkit or browser print fallback
+- **Dark/light theme** — persisted in localStorage
+- **Dockerized** — one command to run everything
 
 ---
 
@@ -209,10 +206,11 @@ Check Ollama availability and list installed models.
 |-------|-----------|
 | Frontend | HTML5, CSS3, Vanilla JavaScript (ES2022) |
 | Backend | Python 3.12, Flask 3.1, Flask-CORS |
-| AI/LLM | Ollama, llama3 (or mistral fallback) |
+| Resume AI | OpenAI GPT-4o-mini (chat completions) |
+| ATS Scoring | OpenAI text-embedding-3-small + NumPy cosine similarity |
 | PDF | pdfkit + wkhtmltopdf (optional) |
 | Container | Docker + Docker Compose |
 
 ---
 
-*Built to demonstrate full-stack AI application development with local LLM integration.*
+*Built to demonstrate full-stack AI application development with OpenAI API integration, semantic search, and country-specific document generation.*
